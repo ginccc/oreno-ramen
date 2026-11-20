@@ -50,4 +50,12 @@ No cookies, no trackers, no third-party requests. The only thing stored in the b
 
 ## Share image
 
-`public/og.png` is the picture shown when someone shares a link to the site. It is a screenshot of the page at `/og/`. To refresh it after changing the bowl or the colours, run `npm run build`, `npm run preview`, open `/og/` in a 1200 × 630 window and save the screenshot over `public/og.png`.
+`public/og.png` is the picture shown when someone shares a link to the site. It is a screenshot of the page at `/og/`. To refresh it after changing the bowl or the colours:
+
+```
+npm run build
+npm run preview
+node scripts/og.mjs http://localhost:4321/og/
+```
+
+The script needs Chrome or Edge. Name, tagline and address sit in the middle square of the card on purpose: several messengers crop previews to a centred square.

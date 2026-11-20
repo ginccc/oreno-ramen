@@ -1,8 +1,13 @@
 ---
 /**
  * The 1200 × 630 card behind public/og.png, the image shown when a link to the
- * site is shared. Not linked from anywhere. To refresh the image, open this page
- * in a 1200 × 630 window and save a screenshot as public/og.png (see README).
+ * site is shared. Not linked from anywhere. See "Share image" in the README for
+ * how to refresh the PNG.
+ *
+ * Composition rule: everything that must be readable (name, tagline, address)
+ * sits inside the middle 630 × 630 square, because WhatsApp, Signal and iMessage
+ * often crop the card to a centred square. The two bowls are decoration and may
+ * be cut off.
  */
 import '@fontsource-variable/bricolage-grotesque/wdth.css';
 import '@fontsource/zen-maru-gothic/500.css';
@@ -28,12 +33,15 @@ import { restaurant } from '../data/restaurant';
       .card {
         --tile: 90px;
         position: relative;
+        display: grid;
+        place-content: center;
+        justify-items: center;
         width: 1200px;
         height: 630px;
-        padding: 60px 64px;
+        text-align: center;
       }
       h1 {
-        font-size: 236px;
+        font-size: 204px;
         line-height: 0.8;
         text-transform: uppercase;
         letter-spacing: -0.03em;
@@ -42,39 +50,55 @@ import { restaurant } from '../data/restaurant';
         display: block;
       }
       p {
-        margin-top: 34px;
-        font-size: 34px;
-        font-weight: 650;
+        margin-top: 30px;
+        padding-inline: 10px;
+        font-size: 38px;
+        font-weight: 700;
+        line-height: 1.2;
         background: var(--yellow);
-        width: fit-content;
       }
       p.where {
-        margin-top: 6px;
-        font-size: 30px;
-        font-weight: 500;
+        margin-top: 4px;
+        font-size: 29px;
+        font-weight: 550;
+      }
+      .side {
+        position: absolute;
+        top: 35px;
+        width: 560px;
+      }
+      .side.left {
+        left: -288px;
+      }
+      .side.right {
+        right: -288px;
       }
       .card :global(.deck) {
-        position: absolute;
-        right: -70px;
-        top: 20px;
-        width: 590px;
+        width: 100%;
         margin: 0;
       }
-      .card :global(.deck-toggle) {
+      .card :global(.deck-toggle),
+      .card :global(.arm) {
         display: none;
       }
-      .card :global(.platter),
-      .card :global(.arm) {
+      .card :global(.platter) {
         animation: none;
+      }
+      .side.left :global(.platter) {
+        transform: rotate(205deg);
+      }
+      .side.right :global(.platter) {
+        transform: rotate(-20deg);
       }
     </style>
   </head>
   <body>
     <div class="card tiles">
+      <div class="side left"><Bowl alt="" pauseLabel="" playLabel="" /></div>
+      <div class="side right"><Bowl alt="" pauseLabel="" playLabel="" /></div>
       <h1 class="poster"><span>Oreno</span><span>Ramen</span></h1>
       <p>{restaurant.tagline}</p>
       <p class="where">{restaurant.street}, {restaurant.zip} {restaurant.city}</p>
-      <Bowl alt="" pauseLabel="" playLabel="" />
     </div>
   </body>
 </html>
