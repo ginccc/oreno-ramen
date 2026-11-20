@@ -1,0 +1,80 @@
+---
+/**
+ * The 1200 × 630 card behind public/og.png, the image shown when a link to the
+ * site is shared. Not linked from anywhere. To refresh the image, open this page
+ * in a 1200 × 630 window and save a screenshot as public/og.png (see README).
+ */
+import '@fontsource-variable/bricolage-grotesque/wdth.css';
+import '@fontsource/zen-maru-gothic/500.css';
+import '../styles/global.css';
+import Bowl from '../components/Bowl.astro';
+import { restaurant } from '../data/restaurant';
+---
+
+<!doctype html>
+<html lang="de-AT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Oreno Ramen</title>
+    <style>
+      body {
+        display: block;
+        width: 1200px;
+        height: 630px;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .card {
+        --tile: 90px;
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        padding: 60px 64px;
+      }
+      h1 {
+        font-size: 236px;
+        line-height: 0.8;
+        text-transform: uppercase;
+        letter-spacing: -0.03em;
+      }
+      h1 span {
+        display: block;
+      }
+      p {
+        margin-top: 34px;
+        font-size: 34px;
+        font-weight: 650;
+        background: var(--yellow);
+        width: fit-content;
+      }
+      p.where {
+        margin-top: 6px;
+        font-size: 30px;
+        font-weight: 500;
+      }
+      .card :global(.deck) {
+        position: absolute;
+        right: -70px;
+        top: 20px;
+        width: 590px;
+        margin: 0;
+      }
+      .card :global(.deck-toggle) {
+        display: none;
+      }
+      .card :global(.platter),
+      .card :global(.arm) {
+        animation: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card tiles">
+      <h1 class="poster"><span>Oreno</span><span>Ramen</span></h1>
+      <p>{restaurant.tagline}</p>
+      <p class="where">{restaurant.street}, {restaurant.zip} {restaurant.city}</p>
+      <Bowl alt="" pauseLabel="" playLabel="" />
+    </div>
+  </body>
+</html>

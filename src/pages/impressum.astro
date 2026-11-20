@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { restaurant } from '../data/restaurant';
+import { url } from '../lib/url';
+---
+
+<Base lang="de" title="Impressum – Oreno Ramen" description="Impressum und Offenlegung von Oreno Ramen, Wien." path="impressum/">
+  <header class="site-header" slot="header">
+    <div class="wrap">
+      <a class="mark" href={url('')} aria-label={restaurant.name}><span lang="ja" aria-hidden="true">の</span></a>
+      <a class="back" href={url('')}>Zur Startseite</a>
+    </div>
+  </header>
+
+  <section class="plain">
+    <div class="wrap">
+      <h1 class="poster">Impressum</h1>
+      <div class="prose">
+        <!-- TODO vor dem Livegang: alle gelb markierten Angaben vom Betreiber eintragen (§ 5 ECG, § 25 MedienG). -->
+        <p>
+          {restaurant.name}<br />
+          {restaurant.street}<br />
+          {restaurant.zip} {restaurant.city}, Österreich
+        </p>
+        <p>Telefon: <a href={restaurant.phoneHref}>{restaurant.phoneDisplay}</a></p>
+
+        <h2>Medieninhaber und Betreiber</h2>
+        <p><span class="todo">Firmenname und Rechtsform eintragen</span></p>
+        <p>E-Mail: <span class="todo">eintragen</span></p>
+        <p>UID-Nummer: <span class="todo">eintragen</span></p>
+        <p>Firmenbuchnummer und Firmenbuchgericht: <span class="todo">eintragen, falls vorhanden</span></p>
+        <p>Gewerbebehörde: <span class="todo">eintragen</span></p>
+        <p>Mitglied der Wirtschaftskammer Wien, Fachgruppe Gastronomie: <span class="todo">bestätigen</span></p>
+
+        <h2>Datenschutz</h2>
+        <p>
+          Diese Website setzt keine Cookies und lädt keine Inhalte von Dritten. Im Browser wird nur gespeichert, dass das Angebot zum Sprachwechsel schon gezeigt wurde. Schriften und Grafiken liegen auf
+          demselben Server wie die Seite. Wer auf „Tisch reservieren“, Instagram, Facebook oder die Karte klickt,
+          verlässt die Seite; dort gelten die Bestimmungen des jeweiligen Anbieters.
+        </p>
+        <p>
+          Die Seite wird über GitHub Pages (GitHub Inc., USA) ausgeliefert. Dabei werden technisch notwendige
+          Zugriffsdaten wie die IP-Adresse verarbeitet. <span class="todo">Vor dem Livegang rechtlich prüfen lassen</span>
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

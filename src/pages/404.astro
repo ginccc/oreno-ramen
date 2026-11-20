@@ -1,0 +1,145 @@
+---
+/**
+ * One 404 page for all three languages (GitHub Pages serves a single 404.html).
+ * The script at the bottom shows the text that fits the address or the browser.
+ * The pug is a nod to the restaurant's own pug drawing: blue line, yellow muzzle.
+ */
+import Base from '../layouts/Base.astro';
+import { restaurant } from '../data/restaurant';
+import { copy, langs } from '../i18n/copy';
+import { url, langUrl } from '../lib/url';
+
+const BLUE = '#1f3fd1';
+const whiskers = [
+  // dots on the left jowl, mirrored for the right
+  [146, 262],
+  [164, 268],
+  [138, 280],
+  [156, 286],
+];
+---
+
+<Base lang="de" title={`${copy.de.notFoundTitle} – Oreno Ramen`} path="404/">
+  <header class="site-header" slot="header">
+    <div class="wrap">
+      <a class="mark" href={url('')} aria-label={restaurant.name}><span lang="ja" aria-hidden="true">の</span></a>
+    </div>
+  </header>
+
+  <section class="nf tiles">
+    <div class="wrap nf-grid">
+      <div class="nf-text">
+        {
+          langs.map((l) => (
+            <div data-lang={l} lang={copy[l].htmlLang} hidden={l !== 'de'}>
+              <h1 class="poster">{copy[l].notFoundTitle}</h1>
+              <p>{copy[l].notFound}</p>
+              <div class="hero-actions">
+                <a class="btn btn-solid" href={langUrl(l)}>
+                  {copy[l].backHome}
+                </a>
+                <a class="btn btn-line" href={`${langUrl(l)}#karte`}>
+                  {copy[l].toMenu}
+                </a>
+              </div>
+            </div>
+          ))
+        }
+        <p class="nf-code">404</p>
+      </div>
+
+      <svg class="pug" viewBox="0 0 400 400" role="img" aria-label="Mops / pug / パグ">
+        <g transform="rotate(-9 200 210)">
+          <!-- head: broad and a little square, as a pug's is -->
+          <path
+            d="M200 58c70 0 122 22 142 76 16 44 14 110-12 158-24 44-74 62-130 62s-106-18-130-62c-26-48-28-114-12-158 20-54 72-76 142-76z"
+            fill="#fff3c4"
+            stroke={BLUE}
+            stroke-width="12"
+            stroke-linejoin="round"></path>
+          <!-- ears: small flaps folded down over the corners of the head -->
+          <g fill={BLUE} stroke={BLUE} stroke-width="10" stroke-linejoin="round">
+            <path d="M112 76C70 70 34 104 40 172c30-16 58-48 72-96z"></path>
+            <path d="M288 76c42-6 78 28 72 96-30-16-58-48-72-96z"></path>
+          </g>
+          <!-- forehead wrinkles and worried brows -->
+          <g fill="none" stroke={BLUE} stroke-width="11" stroke-linecap="round">
+            <path d="M170 100q30-12 60 0"></path>
+            <path d="M184 124q16-8 32 0"></path>
+            <path d="M200 142v22"></path>
+            <path d="M156 138q12 4 18 18"></path>
+            <path d="M244 138q-12 4-18 18"></path>
+            <path d="M96 192q22-34 68-28"></path>
+            <path d="M304 192q-22-34-68-28"></path>
+          </g>
+          <!-- eyes: the highlights follow the pointer -->
+          <g class="eye" data-cx="118" data-cy="232">
+            <circle cx="118" cy="232" r="36" fill={BLUE}></circle>
+            <path d="M98 246q18 14 38 0" fill="none" stroke="#fff3c4" stroke-width="4" stroke-linecap="round"></path>
+            <g class="glint" fill="#fffdf3">
+              <circle cx="108" cy="220" r="8"></circle>
+              <circle cx="124" cy="215" r="4"></circle>
+            </g>
+          </g>
+          <g class="eye" data-cx="282" data-cy="232">
+            <circle cx="282" cy="232" r="36" fill={BLUE}></circle>
+            <path d="M262 246q18 14 38 0" fill="none" stroke="#fff3c4" stroke-width="4" stroke-linecap="round"></path>
+            <g class="glint" fill="#fffdf3">
+              <circle cx="272" cy="220" r="8"></circle>
+              <circle cx="288" cy="215" r="4"></circle>
+            </g>
+          </g>
+          <!-- muzzle with hanging jowls -->
+          <path
+            d="M200 204c44-6 76 18 80 54 2 20 14 34 6 58-10 28-50 30-86 12-36 18-76 16-86-12-8-24 4-38 6-58 4-36 36-60 80-54z"
+            fill="#ffcb05"
+            stroke={BLUE}
+            stroke-width="12"
+            stroke-linejoin="round"></path>
+          <path d="M176 234c6-14 42-14 48 0 4 10-12 20-24 20s-28-10-24-20z" fill={BLUE}></path>
+          <g fill="none" stroke={BLUE} stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M200 254v20"></path>
+            <path d="M200 274c-10 20-28 36-50 44"></path>
+            <path d="M200 274c10 20 28 36 50 44"></path>
+          </g>
+          <g fill={BLUE}>
+            {whiskers.map(([x, y]) => <circle cx={x} cy={y} r="5" />)}
+            {whiskers.map(([x, y]) => <circle cx={400 - x} cy={y} r="5" />)}
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Pick the text: the address first (/en/…, /ja/…), then the browser language, else German.
+  const blocks = document.querySelectorAll<HTMLElement>('.nf-text [data-lang]');
+  const supported = ['de', 'en', 'ja'];
+  const fromPath = location.pathname.split('/').find((part) => part === 'en' || part === 'ja');
+  const fromBrowser = (navigator.languages?.length ? navigator.languages : [navigator.language])
+    .map((l) => l.slice(0, 2).toLowerCase())
+    .find((l) => supported.includes(l));
+  const pick = fromPath ?? fromBrowser ?? 'de';
+  blocks.forEach((b) => (b.hidden = b.dataset.lang !== pick));
+  document.documentElement.lang = pick === 'de' ? 'de-AT' : pick;
+
+  // The pug keeps an eye on the pointer.
+  const svg = document.querySelector<SVGSVGElement>('.pug');
+  const eyes = svg?.querySelectorAll<SVGGElement>('.eye') ?? [];
+  if (svg && eyes.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.addEventListener('pointermove', (e) => {
+      const box = svg.getBoundingClientRect();
+      const scale = 400 / box.width;
+      eyes.forEach((eye) => {
+        const dx = (e.clientX - box.left) * scale - Number(eye.dataset.cx);
+        const dy = (e.clientY - box.top) * scale - Number(eye.dataset.cy);
+        const reach = Math.min(1, Math.hypot(dx, dy) / 240) * 9;
+        const a = Math.atan2(dy, dx);
+        eye
+          .querySelector<SVGGElement>('.glint')
+          ?.setAttribute('transform', `translate(${(Math.cos(a) * reach).toFixed(1)} ${(Math.sin(a) * reach).toFixed(1)})`);
+      });
+    });
+  }
+</script>

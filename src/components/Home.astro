@@ -1,0 +1,316 @@
+---
+import Base from '../layouts/Base.astro';
+import Bowl from './Bowl.astro';
+import { restaurant, hours, closures, quote } from '../data/restaurant';
+import { ramen, sides, desserts, toppings, drinks, type Item } from '../data/menu';
+import { copy, langs, type Lang } from '../i18n/copy';
+import { langUrl } from '../lib/url';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = copy[lang];
+const home = langUrl(lang);
+
+const weekOrder = [2, 3, 4, 5, 6, 0, 1];
+const fmt = (time: string) => (time.endsWith(':00') ? time.slice(0, 2) : time);
+const slotText = (slots: [string, string][]) =>
+  slots.map(([a, b]) => `${fmt(a)}–${fmt(b)}`).join(', ');
+
+const price = (n: number) => n.toFixed(2).replace('.', lang === 'de' ? ',' : '.');
+const tracks = (list: Item[], prefix: string) =>
+  list.map((d, i) => ({
+    no: `${prefix}${i + 1}`,
+    name: lang === 'ja' ? d.nameJa : (lang === 'en' && d.nameEn) || d.name,
+    price: price(d.price),
+    tags: (d.tags ?? []).map((tag) => t.tags[tag]),
+    base: d.base?.[lang],
+    text: d.with?.[lang],
+  }));
+const groups = [
+  { label: t.sideALabel, side: t.sideA, items: tracks(ramen, 'A') },
+  { label: t.sideBLabel, side: t.sideB, items: [...tracks(sides, 'B'), ...tracks(desserts, 'B').map((d, i) => ({ ...d, no: `B${sides.length + i + 1}`, tags: [t.dessert, ...d.tags] }))] },
+];
+const extras = tracks(toppings, 'C');
+---
+
+<Base lang={lang} translated>
+  <header class="site-header" slot="header">
+    <div class="wrap">
+      <a class="mark" href={home} aria-label={restaurant.name}><span lang="ja" aria-hidden="true">の</span></a>
+      <nav class="site-nav" aria-label={t.nav.menu}>
+        <a href="#karte">{t.nav.menu}</a>
+        <a href="#story">{t.nav.story}</a>
+        <a href="#beats">{t.nav.beats}</a>
+        <a href="#besuch">{t.nav.visit}</a>
+      </nav>
+      <nav class="langs" aria-label="Sprache / Language / 言語">
+        {langs.map((l) => (
+          <a href={langUrl(l)} hreflang={l} lang={copy[l].htmlLang} aria-current={l === lang ? 'true' : undefined} title={copy[l].langName}>
+            {l === 'ja' ? '日本語' : l.toUpperCase()}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </header>
+
+  <a class="btn btn-solid float-reserve" href={restaurant.reserveUrl} rel="noopener">{t.reserve}</a>
+
+  <section class="hero tiles">
+    <div class="wrap hero-grid">
+      <div>
+        <h1 class="poster"><span>Oreno</span><span>Ramen</span></h1>
+        <p class="hero-ja" lang="ja">{restaurant.taglineJa}</p>
+        <p class="hero-line">{t.heroLine}</p>
+        <p
+          class="status"
+          role="status"
+          data-hours={JSON.stringify(hours)}
+          data-days={JSON.stringify(t.days)}
+          data-text={JSON.stringify(t.status)}
+          data-closures={JSON.stringify(closures.map((c) => ({ from: c.from, to: c.to, label: c[lang] })))}
+          data-clock={lang === 'de' ? 'short' : 'full'}>
+        </p>
+        <p class="hero-where">
+          <a href={restaurant.mapUrl} rel="noopener">{restaurant.street}, {restaurant.zip} {restaurant.city}</a>
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href={restaurant.reserveUrl} rel="noopener">{t.reserve}</a>
+          <a class="btn btn-line" href="#karte">{t.seeMenu}</a>
+        </div>
+      </div>
+      <Bowl alt={t.bowlAlt} pauseLabel={t.spinPause} playLabel={t.spinPlay} />
+    </div>
+  </section>
+
+  <section class="band menu" id="karte">
+    <div class="wrap">
+      <h2 class="poster">{t.menuTitle}</h2>
+      <p class="lede">{t.menuIntro}</p>
+
+      <div class="sides">
+        {groups.map((g) => (
+          <div>
+            <div class="side-head">
+              <h3 class="poster">{g.label}</h3>
+              <span>{g.side}</span>
+            </div>
+            <ol class="tracks">
+              {g.items.map((d) => (
+                <li>
+                  <span class="track-no">{d.no}</span>
+                  <span class="track-name">
+                    {d.name}
+                    {d.tags.map((tag) => <span class="tag">{tag}</span>)}
+                  </span>
+                  <span class="track-price">{d.price}</span>
+                  {d.base && <span class="track-base">{d.base}</span>}
+                  {d.text && <span class="track-desc">{d.text}</span>}
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
+      </div>
+
+      <div class="extras">
+        <div class="side-head">
+          <h3 class="poster">{t.bonusLabel}</h3>
+          <span>{t.bonus}</span>
+        </div>
+        <ul class="extras-list">
+          {extras.map((d) => (
+            <li>
+              <span class="extra-name">
+                {d.name}
+                {d.tags.map((tag) => <span class="tag">{tag}</span>)}
+              </span>
+              <span class="track-price">{d.price}</span>
+              <span class="extra-desc">{d.text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="extras">
+        <div class="side-head">
+          <h3 class="poster">{t.drinksLabel}</h3>
+          <span>{t.drinksSide}</span>
+        </div>
+        <dl class="drinks">
+          {drinks.map((d) => (
+            <div>
+              <dt>{d.label[lang]}</dt>
+              <dd>{d.items[lang]}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div class="menu-notes">
+        <p>{t.specials}</p>
+        <p>{t.menuNote}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band story" id="story">
+    <div class="wrap story-grid">
+      <div>
+        <h2 class="poster">{t.storyTitle}</h2>
+        <blockquote class="press" lang="de">
+          <p>„{quote.text}“</p>
+          <footer><a href={quote.url} rel="noopener">{quote.source}</a></footer>
+        </blockquote>
+      </div>
+      <div>
+        <div class="story-text">
+          {t.story.map((p) => <p>{p}</p>)}
+        </div>
+        <dl class="facts">
+          {t.storyFacts.map(([k, v]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="band beats" id="beats">
+    <div class="wrap">
+      <h2 class="poster">Ramen &amp; Beats</h2>
+      <p class="beats-ja" lang="ja">ラーメン&amp;ビーツ</p>
+      <div class="beats-body">
+        <div class="beats-text">
+          <p>{t.beats}</p>
+          <p>{t.rahmen}</p>
+        </div>
+        <a class="btn" href={restaurant.instagram} rel="noopener">{t.beatsLink}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band visit tiles" id="besuch">
+    <div class="wrap">
+      <h2 class="poster">{t.visitTitle}</h2>
+      <div class="visit-grid">
+        <div class="panel">
+          <h3>{t.address}</h3>
+          <address>
+            {restaurant.street}<br />
+            {restaurant.zip} {restaurant.city}
+          </address>
+          <div class="links">
+            <a class="btn btn-solid" href={restaurant.reserveUrl} rel="noopener">{t.reserve}</a>
+            <a class="btn btn-line" href={restaurant.mapUrl} rel="noopener">{t.route}</a>
+          </div>
+          <p class="small">
+            {t.call}: <a href={restaurant.phoneHref}>{restaurant.phoneDisplay}</a>
+          </p>
+        </div>
+
+        <div class="panel">
+          <h3>{t.hoursTitle}</h3>
+          <ul class="hours-list">
+            {weekOrder.map((d) => (
+              <li data-day={d}>
+                <span>{t.days[d]}</span>
+                <span class:list={['slots', { off: hours[d].length === 0 }]}>
+                  {hours[d].length ? slotText(hours[d]) : t.closed}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p class="small">{t.kitchen}</p>
+        </div>
+
+        <div class="panel">
+          <h3>{t.goodToKnow}</h3>
+          <ul class="know">
+            <li>{t.cash}</li>
+            <li>{t.veganNote}</li>
+            <li>{t.booking}</li>
+            <li>{t.takeaway}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // "Open now" line and today's row, always in Vienna time whatever the visitor's clock says.
+  const el = document.querySelector<HTMLElement>('.status');
+  if (el) {
+    const hours: Record<string, [string, string][]> = JSON.parse(el.dataset.hours ?? '{}');
+    const days: string[] = JSON.parse(el.dataset.days ?? '[]');
+    const text: Record<string, string> = JSON.parse(el.dataset.text ?? '{}');
+
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Vienna',
+      weekday: 'short',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(new Date());
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+    const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
+    const now = Number(get('hour')) * 60 + Number(get('minute'));
+    const mins = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3));
+    // German reads "17 Uhr"; English gets the full 24-hour time, "17:00".
+    const show = (s: string) =>
+      el.dataset.clock === 'short' && s.endsWith(':00') ? String(Number(s.slice(0, 2))) : s;
+
+    const today = hours[day] ?? [];
+    const current = today.find(([a, b]) => now >= mins(a) && now < mins(b));
+    const later = today.find(([a]) => now < mins(a));
+
+    const date = `${get('year')}-${get('month')}-${get('day')}`;
+    const closures: { from: string; to: string; label: string }[] = JSON.parse(el.dataset.closures ?? '[]');
+    const closure = closures.find((c) => date >= c.from && date <= c.to);
+
+    let line = '';
+    if (closure) {
+      const [, m, d] = closure.to.split('-');
+      line = text.closure.replace('{w}', closure.label).replace('{d}', `${Number(d)}.${Number(m)}.`);
+    } else if (current) line = text.open.replace('{t}', show(current[1]));
+    else if (later) line = text.later.replace('{t}', show(later[0]));
+    else {
+      for (let i = 1; i <= 7; i++) {
+        const next = (day + i) % 7;
+        const slot = (hours[next] ?? [])[0];
+        if (slot) {
+          const template = today.length ? text.closedNow : text.closedToday;
+          line = template.replace('{d}', days[next]).replace('{t}', show(slot[0]));
+          break;
+        }
+      }
+    }
+    el.textContent = line;
+    el.dataset.open = String(Boolean(current) && !closure);
+    document.querySelector(`.hours-list li[data-day="${day}"]`)?.setAttribute('data-today', 'true');
+  }
+
+  // The floating "book a table" button shows only between the hero and the visit section,
+  // where the same button is not already on screen.
+  const float = document.querySelector<HTMLElement>('.float-reserve');
+  const zones = document.querySelectorAll('.hero, #besuch');
+  if (float && zones.length) {
+    const seen = new Set<Element>();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) seen.add(e.target);
+        else seen.delete(e.target);
+      }
+      float.classList.toggle('is-on', seen.size === 0);
+    });
+    zones.forEach((z) => io.observe(z));
+  }
+</script>

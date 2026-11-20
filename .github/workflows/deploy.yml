@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install, build and upload the site
+        uses: withastro/action@v6
+        with:
+          node-version: 24
+        # Site URL and base path are derived from the repository name in astro.config.mjs.
+        # For a custom domain, uncomment and set:
+        # env:
+        #   SITE_URL: 'https://www.example.at'
+        #   BASE_PATH: '/'
+        #   PUBLIC_INDEXABLE: 'true' # let search engines index the site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

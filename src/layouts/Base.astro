@@ -1,0 +1,167 @@
+---
+import '@fontsource-variable/bricolage-grotesque/wdth.css';
+import '@fontsource/zen-maru-gothic/500.css';
+import '@fontsource/zen-maru-gothic/900.css';
+import '../styles/global.css';
+import { restaurant, hours } from '../data/restaurant';
+import { copy, langs, type Lang } from '../i18n/copy';
+import { url, langUrl, indexable } from '../lib/url';
+
+interface Props {
+  lang: Lang;
+  title?: string;
+  description?: string;
+  /** path of this page without the language prefix, e.g. '' or 'impressum/' */
+  path?: string;
+  /** true when the page exists in every language (the home page) */
+  translated?: boolean;
+}
+const { lang, path = '', translated = false } = Astro.props;
+const t = copy[lang];
+const title = Astro.props.title ?? t.title;
+const description = Astro.props.description ?? t.description;
+const home = langUrl(lang);
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const abs = (p: string) => new URL(p, Astro.site).href;
+
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Restaurant',
+  name: restaurant.name,
+  alternateName: restaurant.nameJa,
+  servesCuisine: ['Ramen', 'Japanese'],
+  telephone: '+4318901248',
+  url: abs(url('')),
+  paymentAccepted: 'Cash',
+  priceRange: '€€',
+  hasMenu: abs(url('#karte')),
+  image: abs(url('og.png')),
+  acceptsReservations: restaurant.reserveUrl,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: restaurant.street,
+    postalCode: restaurant.zip,
+    addressLocality: restaurant.city,
+    addressCountry: 'AT',
+  },
+  sameAs: [restaurant.instagram, restaurant.facebook],
+  openingHoursSpecification: Object.entries(hours).flatMap(([day, slots]) =>
+    slots.map(([opens, closes]) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: dayNames[Number(day)],
+      opens,
+      closes,
+    })),
+  ),
+};
+---
+
+<!doctype html>
+<html lang={t.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {!indexable && <meta name="robots" content="noindex, nofollow, noarchive" />}
+    <link rel="canonical" href={canonical} />
+    {
+      translated && (
+        <>
+          {langs.map((l) => (
+            <link rel="alternate" hreflang={l} href={abs(langUrl(l, path))} />
+          ))}
+          <link rel="alternate" hreflang="x-default" href={abs(langUrl('de', path))} />
+        </>
+      )
+    }
+    <link rel="icon" type="image/svg+xml" href={url('favicon.svg')} />
+    <meta name="theme-color" content="#ffcb05" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={abs(url('og.png'))} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <slot name="header" />
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <a class="mark" href={home} aria-label={restaurant.name}><span lang="ja" aria-hidden="true">の</span></a>
+        <p><span lang="ja">{restaurant.nameJa}</span> {t.footerNote}</p>
+        <nav aria-label="Footer">
+          <a href={restaurant.instagram} rel="noopener">Instagram</a>
+          <a href={restaurant.facebook} rel="noopener">Facebook</a>
+          <a href={url('impressum/')}>{t.imprint}</a>
+        </nav>
+      </div>
+    </footer>
+
+    {
+      translated && (
+        <aside class="lang-hint" data-page={lang} hidden>
+          {langs
+            .filter((l) => l !== lang)
+            .map((l) => (
+              <div data-for={l} lang={copy[l].htmlLang} hidden>
+                <p>{copy[l].hint}</p>
+                <div class="lang-hint-actions">
+                  <a class="btn btn-solid" href={langUrl(l, path)} hreflang={l}>
+                    {copy[l].hintYes}
+                  </a>
+                  <button class="btn btn-line" type="button" data-close>
+                    {copy[l].hintNo}
+                  </button>
+                </div>
+              </div>
+            ))}
+        </aside>
+      )
+    }
+  </body>
+</html>
+
+<script>
+  // Offer the visitor's browser language once, if this page is in a different one.
+  // The offer is remembered in localStorage, so it never comes back after the first time.
+  const KEY = 'oreno-lang-hint';
+  const box = document.querySelector<HTMLElement>('.lang-hint');
+  if (box) {
+    const remember = () => {
+      try {
+        localStorage.setItem(KEY, '1');
+      } catch {
+        /* private mode: nothing to remember */
+      }
+    };
+    let seen = false;
+    try {
+      seen = localStorage.getItem(KEY) !== null;
+    } catch {
+      seen = true;
+    }
+    const supported = ['de', 'en', 'ja'];
+    const wanted = (navigator.languages?.length ? navigator.languages : [navigator.language])
+      .map((l) => l.slice(0, 2).toLowerCase())
+      .find((l) => supported.includes(l));
+    const offer = wanted && wanted !== box.dataset.page ? box.querySelector<HTMLElement>(`[data-for="${wanted}"]`) : null;
+
+    if (offer && !seen) {
+      offer.hidden = false;
+      box.hidden = false;
+      remember();
+      offer.querySelector('[data-close]')?.addEventListener('click', () => (box.hidden = true));
+    }
+    // Choosing a language in the header is an answer too.
+    document.querySelectorAll('.langs a').forEach((a) => a.addEventListener('click', remember));
+  }
+</script>

@@ -1,0 +1,284 @@
+---
+/**
+ * A bowl of ramen from above that is also a record on a turntable:
+ * the noodles are the grooves, the yolk of the ni-tamago is the label and
+ * the chopsticks are the tonearm. Only toppings from the real menu card:
+ * chashu, ni-tamago, menma, nori, spring onion, butter corn, mayu oil.
+ * Drawn in the thick-outline poster style of the restaurant's event graphics.
+ *
+ * Everything inside .platter turns. Only the shade on the far side of the
+ * rim sits outside it and stays still. Nothing static may lie over the
+ * toppings: it would look like a stain sliding across them.
+ */
+interface Props {
+  alt: string;
+  pauseLabel: string;
+  playLabel: string;
+}
+const { alt, pauseLabel, playLabel } = Astro.props;
+
+const INK = '#15120a';
+const C = 300; // centre of the 600 × 600 drawing
+
+// Noodles coiled in rings, each ring broken in different places so it reads as strands.
+const cuts = [
+  [0.31, 0.03, 0.24, 0.035, 0.36, 0.025],
+  [0.42, 0.03, 0.18, 0.04, 0.3, 0.03],
+  [0.22, 0.035, 0.4, 0.03, 0.28, 0.035],
+];
+const rings = Array.from({ length: 11 }, (_, i) => {
+  const r = 80 + i * 12;
+  const len = 2 * Math.PI * r;
+  return {
+    r,
+    dash: cuts[i % cuts.length].map((f) => (f * len).toFixed(1)).join(' '),
+    turn: (i * 67) % 360,
+  };
+});
+
+// Strands that have slipped out of the coil.
+const strays = [
+  'M196 286 C 214 222, 262 196, 318 204',
+  'M352 404 C 398 386, 420 342, 410 300',
+  'M236 392 C 262 414, 300 418, 334 404',
+  'M330 150 C 372 160, 408 190, 424 232',
+];
+
+// The meander pattern on the rim of a ramen bowl, seen from above.
+const keys = Array.from({ length: 30 }, (_, i) => (i * 360) / 30);
+
+// Eyes of fat floating on the broth, between the noodles and the rim: angle, radius, size.
+const drops = [
+  [18, 226, 7],
+  [38, 231, 3],
+  [52, 232, 4],
+  [96, 224, 6],
+  [118, 232, 3],
+  [171, 230, 5],
+  [203, 222, 8],
+  [228, 231, 3],
+  [262, 231, 5],
+  [296, 226, 3],
+  [318, 225, 6],
+  [341, 233, 4],
+].map(([deg, r, size]) => {
+  const a = (deg * Math.PI) / 180;
+  return { x: C + Math.cos(a) * r, y: C + Math.sin(a) * r, size };
+});
+
+// Two slices of rolled, braised pork.
+const chashu = [
+  { x: 166, y: 366, turn: -20 },
+  { x: 224, y: 428, turn: 35 },
+];
+
+// Spring onion, cut in rings: a heap, plus a few that rolled away.
+const negi = [
+  [296, 452, 11],
+  [318, 438, 10],
+  [322, 462, 11],
+  [342, 448, 9],
+  [304, 430, 9],
+  [338, 470, 8],
+  [282, 472, 8],
+  [356, 428, 7],
+  [262, 196, 7],
+  [384, 300, 7],
+  [214, 300, 6],
+  [336, 372, 6],
+];
+
+// A pile of butter corn: x, y, rotation of each kernel.
+const corn = [
+  [396, 396, 20],
+  [418, 384, -30],
+  [440, 398, 60],
+  [404, 420, -10],
+  [428, 414, 35],
+  [452, 424, -45],
+  [414, 444, 70],
+  [438, 440, 10],
+  [392, 446, -25],
+  [424, 464, 40],
+  [400, 470, -60],
+  [448, 458, 25],
+  [462, 400, -15],
+  [470, 440, 50],
+];
+---
+
+<div class="deck" data-playing="true">
+  <svg viewBox="0 0 600 600" role="img" aria-label={alt}>
+    <!-- hard shadow on the tiles -->
+    <circle cx="314" cy="316" r="292" fill={INK}></circle>
+
+    <g class="platter">
+      <!-- bowl with patterned rim -->
+      <circle cx={C} cy={C} r="292" fill={INK}></circle>
+      <circle cx={C} cy={C} r="284" fill="#fffdf3"></circle>
+      <circle cx={C} cy={C} r="279" fill="none" stroke="#1f3fd1" stroke-width="2.5"></circle>
+      <g fill="none" stroke="#1f3fd1" stroke-width="4" stroke-linejoin="miter">
+        {keys.map((deg) => <path d="M-9 -273 h18 v14 h-12 v-7 h6" transform={`translate(${C} ${C}) rotate(${deg})`} />)}
+      </g>
+      <circle cx={C} cy={C} r="254.5" fill="none" stroke="#1f3fd1" stroke-width="2.5"></circle>
+      <circle cx={C} cy={C} r="250" fill={INK}></circle>
+
+      <!-- broth, darker where the wall of the bowl shades it -->
+      <circle cx={C} cy={C} r="244" fill="url(#broth)"></circle>
+      {drops.map((d) => (
+        <g>
+          <circle cx={d.x} cy={d.y} r={d.size} fill="#ffcf70" stroke="#a9560f" stroke-width="2" />
+          {d.size > 4 && <circle cx={d.x - d.size * 0.3} cy={d.y - d.size * 0.3} r={d.size * 0.28} fill="#fff3d0" />}
+        </g>
+      ))}
+
+      <!-- noodles: the grooves of the record -->
+      <circle cx={C} cy={C} r="210" fill={INK}></circle>
+      <circle cx={C} cy={C} r="206" fill="#c2811a"></circle>
+      <g fill="none" stroke-linecap="round">
+        {rings.map((n) => (
+          <circle cx={C} cy={C} r={n.r} stroke={INK} stroke-width="11" stroke-dasharray={n.dash} transform={`rotate(${n.turn} ${C} ${C})`} />
+        ))}
+        {rings.map((n) => (
+          <circle cx={C} cy={C} r={n.r} stroke="#ffdf80" stroke-width="7" stroke-dasharray={n.dash} transform={`rotate(${n.turn} ${C} ${C})`} />
+        ))}
+        {rings.map((n) => (
+          <circle cx={C} cy={C} r={n.r - 1.5} stroke="#fff4c2" stroke-width="2" stroke-dasharray={n.dash} transform={`rotate(${n.turn} ${C} ${C})`} />
+        ))}
+        {strays.map((d) => <path d={d} stroke={INK} stroke-width="12" />)}
+        {strays.map((d) => <path d={d} stroke="#ffdf80" stroke-width="7" />)}
+        {strays.map((d) => <path d={d} stroke="#fff4c2" stroke-width="2" transform="translate(-1 -1.5)" />)}
+      </g>
+
+      <!-- mayu oil: black garlic oil, floating on the broth in flat irregular pools -->
+      <g fill="#2a1c10">
+        <path d="M96 232c8-10 24-8 30 0s14 4 16 14-10 16-22 12-12 6-22 0-10-16-2-26z"></path>
+        <circle cx="150" cy="226" r="5"></circle>
+        <circle cx="88" cy="270" r="4"></circle>
+        <path d="M468 190c8-6 20-2 22 8s10 10 6 20-18 8-24 0-14-18-4-28z"></path>
+        <circle cx="502" cy="232" r="4"></circle>
+        <path d="M262 506c10-6 26-4 34 2s20 0 24 8-14 14-28 10-36-10-30-20z"></path>
+        <circle cx="336" cy="524" r="4"></circle>
+      </g>
+
+      <!-- nori, two sheets tucked in at the rim -->
+      <g stroke={INK} stroke-width="5" stroke-linejoin="round">
+        <rect x="96" y="92" width="96" height="124" rx="5" fill="#243a2f" transform="rotate(-42 144 154)"></rect>
+        <rect x="150" y="62" width="96" height="124" rx="5" fill="#182820" transform="rotate(-24 198 124)"></rect>
+      </g>
+      <g stroke="#7fa08a" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round" transform="rotate(-24 198 124)">
+        <path d="M164 80h14M190 84h30M172 100h8M200 106h22M162 124h26M204 128h10M178 146h34M166 164h12M196 168h28"></path>
+      </g>
+      <g stroke="#7fa08a" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round" transform="rotate(-42 144 154)">
+        <path d="M108 112h18M112 140h10M106 170h22M114 196h12"></path>
+      </g>
+
+      <!-- menma -->
+      <g transform="rotate(78 462 286)">
+        <g fill="#dba95f" stroke={INK} stroke-width="4" stroke-linejoin="round">
+          <path d="M418 258h80l8 10-8 10h-80z"></path>
+          <path d="M430 282h80l8 10-8 10h-80z"></path>
+          <path d="M412 306h80l8 10-8 10h-80z"></path>
+        </g>
+        <g stroke="#a8742f" stroke-width="2" stroke-linecap="round">
+          <path d="M426 264h62M426 272h54M438 288h62M438 296h50M420 312h62M420 320h54"></path>
+        </g>
+      </g>
+
+      <!-- chashu: rolled pork belly, seared at the edge -->
+      {chashu.map((s) => (
+        <g transform={`translate(${s.x} ${s.y}) rotate(${s.turn})`}>
+          <circle r="60" fill="#f4dfc9" stroke={INK} stroke-width="5" />
+          <circle r="54" fill="none" stroke="#8a4a2c" stroke-width="5" stroke-dasharray="46 16 78 22 34 18 60 28" />
+          <path d="M-44 -6c-2-26 22-44 48-40s42 26 38 50-28 42-52 38-32-22-34-48z" fill="#c4805a" />
+          <path d="M-28 -6c2-20 24-26 38-14s10 34-8 36-22-14-12-24 22-2 16 8" fill="none" stroke="#f4dfc9" stroke-width="7" stroke-linecap="round" />
+          <g fill="none" stroke="#9c5a3c" stroke-width="2.5" stroke-linecap="round">
+            <path d="M-34 14c6 12 18 20 32 22M22 -30c8 6 14 16 14 28M-20 -32c10-6 22-6 32-2" />
+          </g>
+        </g>
+      ))}
+
+      <!-- butter corn -->
+      {corn.map(([x, y, turn]) => (
+        <g transform={`rotate(${turn} ${x} ${y})`}>
+          <rect x={x - 9} y={y - 7} width="18" height="14" rx="6" fill="#ffd21f" stroke={INK} stroke-width="3" />
+          <rect x={x - 5} y={y - 4} width="6" height="3" rx="1.5" fill="#fff3a8" />
+        </g>
+      ))}
+
+      <!-- spring onion -->
+      {negi.map(([x, y, r]) => (
+        <g>
+          <circle cx={x} cy={y} r={r} fill="#3d9a45" stroke={INK} stroke-width="3" />
+          <circle cx={x} cy={y} r={r * 0.62} fill="#8fcf7a" />
+          <circle cx={x} cy={y} r={r * 0.34} fill="#e3f4c6" />
+        </g>
+      ))}
+
+      <!-- ni-tamago in the middle: soy-stained outside, and the yolk is the label of the record -->
+      <g transform={`rotate(-18 ${C} ${C})`}>
+        <ellipse cx={C} cy={C - 6} rx="58" ry="70" fill="#e2bd8c" stroke={INK} stroke-width="5"></ellipse>
+        <ellipse cx={C} cy={C - 6} rx="50" ry="62" fill="#fffdf3"></ellipse>
+        <circle cx={C} cy={C} r="34" fill="#f08a00" stroke="#c96a00" stroke-width="4"></circle>
+        <circle cx={C} cy={C} r="24" fill="#ffa71a"></circle>
+        <path d={`M${C - 20} ${C - 10}a24 24 0 0 1 16 -12`} fill="none" stroke="#ffe08a" stroke-width="5" stroke-linecap="round"></path>
+        <circle cx={C} cy={C} r="6" fill={INK}></circle>
+      </g>
+    </g>
+
+    <!-- light that stays still while the record turns -->
+    <g pointer-events="none">
+      <!-- the far side of the rim lies in shade -->
+      <path d="M561 345 A265 265 0 0 1 345 561" fill="none" stroke={INK} stroke-opacity="0.1" stroke-width="32" stroke-linecap="round"></path>
+    </g>
+
+    <!-- chopsticks: the tonearm, resting on a hashioki -->
+    <g class="arm">
+      <g transform="translate(552 62)">
+        <polygon points="-46,-8 222,-3.5 222,3.5 -46,8" fill="#b9342b" stroke={INK} stroke-width="5" stroke-linejoin="round" transform="rotate(137)"></polygon>
+        <polygon points="-46,-8 222,-3.5 222,3.5 -46,8" fill="#b9342b" stroke={INK} stroke-width="5" stroke-linejoin="round" transform="rotate(143)"></polygon>
+        <g fill="none" stroke="#e8736a" stroke-width="2" stroke-linecap="round">
+          <path d="M-14 -3 L206 -1" transform="rotate(137)"></path>
+          <path d="M-14 -3 L206 -1" transform="rotate(143)"></path>
+        </g>
+        <g fill="#ffcb05">
+          <rect x="-34" y="-7" width="10" height="14" transform="rotate(137)"></rect>
+          <rect x="-34" y="-7" width="10" height="14" transform="rotate(143)"></rect>
+        </g>
+      </g>
+      <circle cx="552" cy="62" r="30" fill={INK}></circle>
+      <circle cx="552" cy="62" r="19" fill="#ffcb05"></circle>
+      <circle cx="552" cy="62" r="6" fill={INK}></circle>
+    </g>
+
+    <defs>
+      <radialGradient id="broth" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0.8" stop-color="#ea951f"></stop>
+        <stop offset="0.93" stop-color="#c8721a"></stop>
+        <stop offset="1" stop-color="#a55616"></stop>
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <button class="deck-toggle" type="button" aria-pressed="false" data-pause={pauseLabel} data-play={playLabel}>
+    {pauseLabel}
+  </button>
+</div>
+
+<script>
+  const deck = document.querySelector<HTMLElement>('.deck');
+  const button = deck?.querySelector<HTMLButtonElement>('.deck-toggle');
+  if (deck && button) {
+    const set = (playing: boolean) => {
+      deck.dataset.playing = String(playing);
+      button.setAttribute('aria-pressed', String(!playing));
+      button.textContent = (playing ? button.dataset.pause : button.dataset.play) ?? '';
+    };
+    // Visitors who asked for less motion start with the record at rest.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) set(false);
+    button.addEventListener('click', () => {
+      deck.dataset.user = 'true';
+      set(deck.dataset.playing !== 'true');
+    });
+  }
+</script>
