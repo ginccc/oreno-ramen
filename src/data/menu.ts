@@ -108,7 +108,7 @@ export const sides: Item[] = [
     nameJa: '枝豆',
     price: 6,
     tags: ['vegan'],
-    with: { de: 'Grüne Sojabohnen mit Meersalz', en: 'Green soybeans with sea salt', ja: '海塩で' },
+    with: { de: 'Grüne Sojabohnen mit Meersalz', en: 'Green soybeans with sea salt', ja: '海塩をふって' },
   },
   {
     name: 'Edamame mit schwarzem Knoblauch',
@@ -116,7 +116,7 @@ export const sides: Item[] = [
     nameJa: '黒にんにく枝豆',
     price: 7.2, // CHECK
     tags: ['vegan'],
-    with: { de: 'Mit schwarzem Knoblauch und Chiliöl', en: 'With black garlic and chilli oil', ja: '黒にんにくとチリオイル' },
+    with: { de: 'Mit schwarzem Knoblauch und Chiliöl', en: 'With black garlic and chilli oil', ja: '黒にんにくとラー油で' },
   },
   {
     name: 'Pirikara Gurken',
@@ -179,7 +179,7 @@ export const desserts: Item[] = [
 ];
 
 export const toppings: Item[] = [
-  { name: 'Nori', nameJa: 'のり', price: 1, tags: ['vegan'], with: { de: 'Hauchdünn geröstete Algenblätter', en: 'Paper-thin roasted seaweed', ja: '薄く焼いた海苔' } },
+  { name: 'Nori', nameJa: '海苔', price: 1, tags: ['vegan'], with: { de: 'Hauchdünn geröstete Algenblätter', en: 'Paper-thin roasted seaweed', ja: '薄く焼いた海苔' } },
   { name: 'Sojasprossen', nameEn: 'Bean sprouts', nameJa: 'もやし', price: 1.9, tags: ['vegan'], with: { de: 'Knackig frisch', en: 'Fresh and crunchy', ja: 'シャキシャキ' } },
   { name: 'Menma', nameJa: 'メンマ', price: 2.7, tags: ['vegan'], with: { de: 'Würzig marinierter Bambus', en: 'Marinated bamboo', ja: '味付けたけのこ' } },
   { name: 'Baummorcheln', nameEn: 'Wood ear mushrooms', nameJa: 'キクラゲ', price: 2.5, tags: ['vegan'], with: { de: 'Eingelegt', en: 'Pickled', ja: '味付け' } },
@@ -214,7 +214,7 @@ export const drinks: { label: Text; items: Text }[] = [
     items: {
       de: 'Calpis Soda, Calpis Wasser, Apfelsaft naturtrüb, Soda Zitrone, Tirola Kola, Orangina, Mineralwasser',
       en: 'Calpis soda, Calpis water, cloudy apple juice, soda with lemon, Tirola Kola, Orangina, mineral water',
-      ja: 'カルピスソーダ、カルピスウォーター、りんごジュース、レモンソーダ、チロルコーラ、オランジーナ、ミネラルウォーター',
+      ja: 'カルピスソーダ、カルピスウォーター、にごりりんごジュース、レモンソーダ、ティローラ・コーラ、オランジーナ、ミネラルウォーター',
     },
   },
   {
@@ -237,8 +237,8 @@ export const drinks: { label: Text; items: Text }[] = [
     label: { de: 'Kaffee', en: 'Coffee', ja: 'コーヒー' },
     items: {
       de: 'Espresso, Verlängerter, Cappuccino, Melange',
-      en: 'Espresso, Verlängerter, cappuccino, Melange',
-      ja: 'エスプレッソ、フェアレンゲルター、カプチーノ、メランジュ',
+      en: 'Espresso, Verlängerter (a long black), cappuccino, Melange (Viennese milky coffee)',
+      ja: 'エスプレッソ、フェアレンゲルター（ウィーン風アメリカーノ）、カプチーノ、メランジェ（ウィーン風カフェラテ）',
     },
   },
 ];

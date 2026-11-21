@@ -278,8 +278,10 @@ const extras = tracks(toppings, 'C');
 
     let line = '';
     if (closure) {
-      const [, m, d] = closure.to.split('-');
-      line = text.closure.replace('{w}', closure.label).replace('{d}', `${Number(d)}.${Number(m)}.`);
+      const until = new Intl.DateTimeFormat(document.documentElement.lang, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
+        new Date(`${closure.to}T00:00:00Z`),
+      );
+      line = text.closure.replace('{w}', closure.label).replace('{d}', until);
     } else if (current) line = text.open.replace('{t}', show(current[1]));
     else if (later) line = text.later.replace('{t}', show(later[0]));
     else {
