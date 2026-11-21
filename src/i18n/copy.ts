@@ -46,7 +46,7 @@ export const copy = {
     story: [
       'Justin Chen isst Ramen wahnsinnig gern. Er hat sie in zwei Wiener Ramenläden serviert, bevor er 2019 seinen eigenen aufgesperrt hat: in einem früheren Café in der Lerchenfelder Straße.',
       'Die gelben Fliesen und die Tatami-Matten hat er selbst verlegt, nach den Plänen eines befreundeten Grafikers. Der Raum ist klein geblieben, die Küche ist offen.',
-      'Oreno Ramen, 俺のラーメン, heißt „meine Ramen“. Das の daraus steht im gelben Kreis. Der Rest ist Suppe.',
+      'Oreno Ramen, 俺のラーメン, heißt so viel wie „mein Ramen“. Das の daraus steht im gelben Kreis. Der Rest ist Suppe.',
     ],
     storyFacts: [
       ['Seit', '2019'],
